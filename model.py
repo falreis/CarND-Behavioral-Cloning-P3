@@ -6,7 +6,7 @@ import gc
 LOG_PATHS = ["data/2laps/"]
 
 #parameters to tune
-correction = 0.2
+correction = 0.22
 crop_top = 70
 crop_bottom = 25
 crop_left = 0
@@ -64,12 +64,8 @@ model.add(Dense(50))
 model.add(Dense(10))
 model.add(Dense(1))
 
-#model.add(Flatten())
-#model.add(Dense(1))
-
 model.compile(loss='mse', optimizer='adam')
-#model.fit(x_train, y_train, validataion_split=0.2, huffle=True, nb_epoch=1)
-model.fit(x_train, y_train, nb_epoch=3, validation_split=0.2, shuffle=True)
+model.fit(x_train, y_train, nb_epoch=2, validation_split=0.2, shuffle=True)
 
 #run garbage collector
 gc.collect()
@@ -78,6 +74,3 @@ gc.collect()
 model.save('model.h5')
 
 print("THE END")
-
-#loss: 0.1356 - val_loss: 0.0807 (10 epochs - 1 layer)
-#loss: 24.7414 - val_loss: 7.1673 (3 epochs - LeNet)
