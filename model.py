@@ -22,7 +22,7 @@ for path in LOG_PATHS:
         reader = csv.reader(csvfile)
         for line in reader:
             image_c = cv2.imread(path + line[0])
-            mesurement_c = float(line[3])
+            mesurement_c = float(line[3]) * 1.1
 
             image_l = cv2.imread(path + line[1])
             image_r = cv2.imread(path + line[2])
