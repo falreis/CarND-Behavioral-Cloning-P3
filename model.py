@@ -7,10 +7,10 @@ LOG_PATHS = ["data/2laps/"]
 
 #parameters to tune
 correction = 0.22
-crop_top = 70
-crop_bottom = 25
+crop_top = 80
+crop_bottom = 135
 crop_left = 0
-crop_right = 0
+crop_right = 320
 
 #read file
 
@@ -22,22 +22,24 @@ for path in LOG_PATHS:
         reader = csv.reader(csvfile)
         for line in reader:
             image_c = cv2.imread(path + line[0])
-            mesurement_c = float(line[3]) * 1.1
-
             image_l = cv2.imread(path + line[1])
             image_r = cv2.imread(path + line[2])
-            mesurement_l = mesurement_c + correction
-            mesurement_r = mesurement_c - correction
-
-            images.append(image_c)
-            images.append(image_l)
-            images.append(image_r)
-            mesurements.append(mesurement_c)
-            mesurements.append(mesurement_l)
-            mesurements.append(mesurement_r)
-
-            #images.append(cv2.flip(image_c, 1))
-            #mesurements.append(-mesurement_c)
+            
+            mesurement_c = float(line[3]) * 1.1
+            
+            if(image_c != None):
+                images.append(image_c[crop_top:crop_bottom, crop_left:crop_right])
+                mesurements.append(mesurement_c)
+                
+            if(image_l != None):
+                mesurement_l = mesurement_c + correction
+                images.append(image_l[crop_top:crop_bottom, crop_left:crop_right])
+                mesurements.append(mesurement_l)
+                
+            if(image_r != None):
+                mesurement_r = mesurement_c - correction
+                images.append(image_r[crop_top:crop_bottom, crop_left:crop_right])
+                mesurements.append(mesurement_r)
         #endfor
     #endwith
 #endfor
@@ -51,8 +53,8 @@ from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 
 model = Sequential()
-model.add(Lambda(lambda x:x / 255.0 - 0.5, input_shape=(160,320,3)))
-model.add(Cropping2D(cropping=((crop_top, crop_bottom),(crop_left, crop_right))))
+model.add(Lambda(lambda x:x / 255.0 - 0.5, input_shape=((crop_bottom-crop_top),crop_right,3)))
+#model.add(Cropping2D(cropping=((crop_top, crop_bottom),(crop_left, crop_right))))
 model.add(Convolution2D(24,5,5, subsample=(2,2), activation="relu"))
 model.add(Convolution2D(36,5,5, subsample=(2,2), activation="relu"))
 model.add(Convolution2D(48,5,5, subsample=(2,2), activation="relu"))
