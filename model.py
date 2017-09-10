@@ -27,16 +27,13 @@ for path in LOG_PATHS:
             
             mesurement_c = float(line[3]) * 1.1
             
-            #if(image_c != None):
             images.append(image_c)
             mesurements.append(mesurement_c)
                 
-            #if(image_l != None):
             mesurement_l = mesurement_c + correction
             images.append(image_l)
             mesurements.append(mesurement_l)
                 
-            #if(image_r != None):
             mesurement_r = mesurement_c - correction
             images.append(image_r)
             mesurements.append(mesurement_r)
