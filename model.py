@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import gc
 
-LOG_PATHS = ["data/2laps/"]
+LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/1lap/", "data/reckless/"]
 
 #parameters to tune
 correction = 0.22
@@ -25,7 +25,7 @@ for path in LOG_PATHS:
             image_l = cv2.imread(path + line[1])
             image_r = cv2.imread(path + line[2])
             
-            mesurement_c = float(line[3]) * 1.1
+            mesurement_c = float(line[3])
             
             images.append(image_c)
             mesurements.append(mesurement_c)
@@ -37,6 +37,15 @@ for path in LOG_PATHS:
             mesurement_r = mesurement_c - correction
             images.append(image_r)
             mesurements.append(mesurement_r)
+
+            #flip images
+            images.append(np.fliplr(image_c))
+            images.append(np.fliplr(image_l))
+            images.append(np.fliplr(image_r))
+
+            mesurements.append(-mesurement_c)
+            mesurements.append(-mesurement_l)
+            mesurements.append(-mesurement_r)
         #endfor
     #endwith
 #endfor
