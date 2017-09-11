@@ -3,7 +3,9 @@ import cv2
 import numpy as np
 import gc
 
-LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/1lap/", "data/reckless/"]
+#LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"]
+LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/"]
+#LOG_PATHS = ["data/2laps/"]
 
 #parameters to tune
 correction = 0.22
@@ -11,6 +13,7 @@ crop_top = 70
 crop_bottom = 25
 crop_left = 0
 crop_right = 0
+stability = 1.1
 
 #read file
 
@@ -25,8 +28,17 @@ for path in LOG_PATHS:
             image_l = cv2.imread(path + line[1])
             image_r = cv2.imread(path + line[2])
             
+            #cv2.normalize(image_c, image_c, 0, 255, cv2.NORM_L1)
+            #cv2.normalize(image_l, image_c, 0, 255, cv2.NORM_L1)
+            #cv2.normalize(image_r, image_c, 0, 255, cv2.NORM_L1)
+
+            #mesurements
             mesurement_c = float(line[3])
-            
+            if mesurement_c > 0:
+                mesurement_c = mesurement_c * stability
+            else:
+                mesurement_c = mesurement_c / stability
+
             images.append(image_c)
             mesurements.append(mesurement_c)
                 
@@ -39,13 +51,13 @@ for path in LOG_PATHS:
             mesurements.append(mesurement_r)
 
             #flip images
-            images.append(np.fliplr(image_c))
-            images.append(np.fliplr(image_l))
-            images.append(np.fliplr(image_r))
+            #images.append(np.fliplr(image_c))
+            #images.append(np.fliplr(image_l))
+            #images.append(np.fliplr(image_r))
 
-            mesurements.append(-mesurement_c)
-            mesurements.append(-mesurement_l)
-            mesurements.append(-mesurement_r)
+            #mesurements.append(-mesurement_c)
+            #mesurements.append(-mesurement_l)
+            #mesurements.append(-mesurement_r)
         #endfor
     #endwith
 #endfor
@@ -60,6 +72,7 @@ from keras.layers.pooling import MaxPooling2D
 
 model = Sequential()
 model.add(Lambda(lambda x:x / 255.0 - 0.5, input_shape=(160,320,3)))
+#model.add(Lambda(lambda x:x, input_shape=(160,320,3)))
 model.add(Cropping2D(cropping=((crop_top, crop_bottom),(crop_left, crop_right))))
 model.add(Convolution2D(24,5,5, subsample=(2,2), activation="relu"))
 model.add(Convolution2D(36,5,5, subsample=(2,2), activation="relu"))
