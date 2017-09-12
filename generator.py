@@ -7,8 +7,7 @@ import sklearn
 
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"]
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/"]
-LOG_PATHS = ["data/bridge/"]
-LOG_PATH = "data/bridge/"
+LOG_PATHS = ["data/2laps/"]
 
 #parameters to tune
 correction = 0.22
@@ -25,6 +24,8 @@ for path in LOG_PATHS:
     with open(path + "driving_log.csv") as csvfile:
         reader = csv.reader(csvfile)
         for line in reader:
+            for i in range(0,3):
+                line[i] = path + line[i]
             samples.append(line)
         #endfor
     #endwith
@@ -44,22 +45,33 @@ def generator(samples, batch_size=32):
             images = []
             angles = []
             for batch_sample in batch_samples:
-                center_image = cv2.imread(LOG_PATH + batch_sample[0])
-                center_angle = float(batch_sample[3])
+                #images
+                center_image = cv2.imread(batch_sample[0])
+                left_image = cv2.imread(batch_sample[1])
+                right_image = cv2.imread(batch_sample[2])
 
+                #angles
+                center_angle = float(batch_sample[3])
                 if center_angle > 0:
                     center_angle *= stability
                 else:
                     center_angle /= stability
 
+                #append images and angles
                 images.append(center_image)
+                images.append(left_image) #left image
+                images.append(right_image) #right image
                 angles.append(center_angle)
-                
-                images.append(cv2.imread(LOG_PATH + batch_sample[1])) #left image
-                images.append(cv2.imread(LOG_PATH + batch_sample[2])) #right image
                 angles.append(center_angle + correction) #left angle
                 angles.append(center_angle - correction) #right angle
-                
+
+                #flipped images and angles
+                images.append(np.fliplr(center_image))
+                images.append(np.fliplr(left_image))
+                images.append(np.fliplr(right_image))
+                angles.append(-center_angle)
+                angles.append(-(center_angle + correction))
+                angles.append(-(center_angle - correction))
             #endfor
 
             # trim image to only see section with road
@@ -68,11 +80,13 @@ def generator(samples, batch_size=32):
             yield sklearn.utils.shuffle(X_train, y_train)
         #endfor
     #endwhile
-#enddef
+#enddef generator
 
+#train and validation generator
 train_generator = generator(train_samples, batch_size=32)
 validation_generator = generator(validation_samples, batch_size=32)
 
+#neural network architecture
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout
 from keras.layers.convolutional import Convolution2D
@@ -95,8 +109,8 @@ model.add(Dropout(dropout_rate))
 model.add(Dense(10))
 model.add(Dense(1))
 
+#NN compile and fit generator
 model.compile(loss='mse', optimizer='adam')
-#model.fit(x_train, y_train, nb_epoch=2, validation_split=0.2, shuffle=True)
 model.fit_generator(train_generator, samples_per_epoch= len(train_samples), 
     validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=1)
 
