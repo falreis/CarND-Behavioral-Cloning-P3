@@ -5,7 +5,7 @@ import gc
 import random
 import sklearn
 
-LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"]
+LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/", "data/3laps/", "data/curve/"]
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/"]
 #LOG_PATHS = ["data/2laps/"]
 
@@ -112,7 +112,7 @@ model.add(Dense(1))
 #NN compile and fit generator
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, samples_per_epoch= len(train_samples), 
-    validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=4)
+    validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=2)
 
 #run garbage collector
 gc.collect()
