@@ -19,81 +19,60 @@ stability = 1.1
 dropout_rate = 0.3
 
 #read file
-images = []
-mesurements = []
+samples = []
+for path in LOG_PATHS:
+    with open(path + "driving_log.csv") as csvfile:
+        reader = csv.reader(csvfile)
+        for line in reader:
+            samples.append(line)
+            break
+        #endfor
+    #endwith
+#endfor
+
+from sklearn.model_selection import train_test_split
+train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
 #generator
-'''
 def generator(samples, batch_size=32):
     num_samples = len(samples)
     while 1: # Loop forever so the generator never terminates
-        shuffle(samples)
+        sklearn.utils.shuffle(samples)
         for offset in range(0, num_samples, batch_size):
             batch_samples = samples[offset:offset+batch_size]
 
             images = []
             angles = []
             for batch_sample in batch_samples:
-                name = './IMG/'+batch_sample[0].split('/')[-1]
-                center_image = cv2.imread(name)
+                center_image = cv2.imread(LOG_PATHS + batch_sample[0])
                 center_angle = float(batch_sample[3])
+
+                if center_angle > 0:
+                    center_angle *= stability
+                else:
+                    center_angle /= stability
+
                 images.append(center_image)
                 angles.append(center_angle)
+                
+                '''
+                images.append(cv2.imread(LOG_PATHS + batch_sample[1])) #left image
+                images.append(cv2.imread(LOG_PATHS + batch_sample[2])) #right image
+                angles.append(center_angle + correction) #left angle
+                angles.append(center_angle - correction) #right angle
+                '''
+            #endfor
 
             # trim image to only see section with road
             X_train = np.array(images)
             y_train = np.array(angles)
             yield sklearn.utils.shuffle(X_train, y_train)
+        #endfor
+    #endwhile
+#enddef
 
 train_generator = generator(train_samples, batch_size=32)
-validation_generator = generator(validation_samples, batch_size=32
-'''
-
-#read file
-for path in LOG_PATHS:
-    with open(path + "driving_log.csv") as csvfile:
-        reader = csv.reader(csvfile)
-        for line in reader:
-            image_c = cv2.imread(path + line[0])
-            image_l = cv2.imread(path + line[1])
-            image_r = cv2.imread(path + line[2])
-            
-            #cv2.normalize(image_c, image_c, 0, 255, cv2.NORM_L1)
-            #cv2.normalize(image_l, image_c, 0, 255, cv2.NORM_L1)
-            #cv2.normalize(image_r, image_c, 0, 255, cv2.NORM_L1)
-
-            #mesurements
-            mesurement_c = float(line[3])
-            if mesurement_c > 0:
-                mesurement_c = mesurement_c * stability
-            else:
-                mesurement_c = mesurement_c / stability
-
-            images.append(image_c)
-            mesurements.append(mesurement_c)
-                
-            mesurement_l = mesurement_c + correction
-            images.append(image_l)
-            mesurements.append(mesurement_l)
-                
-            mesurement_r = mesurement_c - correction
-            images.append(image_r)
-            mesurements.append(mesurement_r)
-
-            #flip images
-            #images.append(np.fliplr(image_c))
-            #images.append(np.fliplr(image_l))
-            #images.append(np.fliplr(image_r))
-
-            #mesurements.append(-mesurement_c)
-            #mesurements.append(-mesurement_l)
-            #mesurements.append(-mesurement_r)
-        #endfor
-    #endwith
-#endfor
-
-x_train = np.array(images)
-y_train = np.array(mesurements)
+validation_generator = generator(validation_samples, batch_size=32)
 
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout
@@ -118,9 +97,9 @@ model.add(Dense(10))
 model.add(Dense(1))
 
 model.compile(loss='mse', optimizer='adam')
-model.fit(x_train, y_train, nb_epoch=2, validation_split=0.2, shuffle=True)
-#model.fit_generator(x_train, samples_per_epoch= len(x_train), /
-#            validation_data=y_train, nb_val_samples=len(y_train), nb_epoch=2)
+#model.fit(x_train, y_train, nb_epoch=2, validation_split=0.2, shuffle=True)
+model.fit_generator(train_generator, samples_per_epoch= len(train_samples), 
+    validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=1)
 
 #run garbage collector
 gc.collect()
