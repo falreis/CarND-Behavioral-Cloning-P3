@@ -12,7 +12,7 @@ My project includes the following files:
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
 * writeup_report.md or writeup_report.pdf summarizing the results
-* video.mp4 containing the video file from the run test
+* video.mp4 containing the output video file
 
 #### 2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
@@ -23,6 +23,16 @@ python drive.py model.h5
 #### 3. Submission code is usable and readable
 
 The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
+
+#### 4. Important
+
+**All the data set was zipped to reduce the number of images files in Github repository**
+
+To unzip the files, follow the commands below, in each data directory:
+```sh
+zip -FF IMG.zip --out full.zip
+unzip full.zip
+```
 
 ---
 ### Model Architecture and Training Strategy
@@ -53,11 +63,13 @@ For normalize the data, I started with the simple normalization *(pixel / 255) -
 
 ##### 1.4 Steering angles
 
-**TODO**
+To increase the performance of the solution, it was used the complementary images from the simulation. The left and the right images increased the knowledges of the neural network. To use the complementary images, was necessary to correct the mesurements of the datalog, to keep the vehicle on track.
 
 ##### 1.5 Stabilization
 
-**TODO**
+Making some tests in the solution, I discovered that I could make some improvements if I change a little bit the mesurements values for all data. If I multiply/divide the value of the mesurements (left, right) for a small parameter (1.1 or 1.2), the system predicted the changes faster and get more stable on the track.
+
+I used this idea to improve my model and refine my algorithm. The value of all the mesurements was multiplied/divided by 1.1, increasing the system response (model.py lines 16, 37-40).
 
 
 #### 2. Detailed Model Architecture
@@ -107,19 +119,24 @@ The detailed architecture is detailed bellow.
 | Dense | 1 (Output) |
 |||
 
-#### 2. Attempts to reduce overfitting in the model
-
 The model contains dropout layers in order to reduce overfitting, in the end of the model (model.py lines 83-86). 
 
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 23-63). 
+The model was trained and validated on different data sets to ensure that the model was not overfitting (model.py line 23-63). 
 
-To test the model, I did some simulations, creating some scenarios to train the model:
-- **1 lap** - 1 lap at the track
-- **2 laps** - 2 laps at the track
-- **3 laps** - 3 laps at the track
+#### 3. Training
+
+##### 3.1 Collecting Data & Training Sets
+
+To capture good driving behavior, I first recorded one laps on track one using center lane driving. Then I started to do some others scenarios, to use to train the model. The scenarios that I used is described below.
+
+- **1 lap** - 1 lap at the track (on the center lane driving)
+- **2 laps** - 2 laps at the track (on the center lane driving)
+- **3 laps** - 3 laps at the track (on the center lane driving)
 - **2 laps reverse** - 2 laps at the simulation in the reverse direction
 - **bridge** - cross the bridge simulation
 - **reckless** - driving for 2 laps to the board of the road, crossing many times the road without get out of the track
+
+##### 3.2 Training Process
 
 To create the model, I combine all the simulation datas to create a large volume of data samples. I did the following steps to define my best training set. I wanted to use the minimum data set with the best results.
 
@@ -130,48 +147,29 @@ To create the model, I combine all the simulation datas to create a large volume
 - Adding **bridge training set** I wanted to test if the results were better in the bridge of the circuit. I think that this sample set is useless, because using the **2 laps training set**, the results were the same. I decided to keep this training set even so, to guarantee the good results;
 - Using **reckless training set** with combine with **2 laps training set**, the results were worse. The car start to go the the board of the road, without any improvements. In some moment, in a curve, the car went out the track.
 
+##### 3.3 Appropriate Training Data
+
 The final training set, defined for my model was the combination of the following samples:
 - **2 laps**
 - **2 laps reverse**
 - **bridge**
 
-#### 3. Model parameter tuning
+The model was trained for 2 epochs. Train for 3 epochs make sometimes made few improvements and some made worse results then 2 epochs. The increase of the number of trainings causes overfitting.
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
+##### 3.4 Training and Validation Data
 
-#### 4. Appropriate training data
+After the collection process and the definition of the appropriate training data, I had 14895 data points. 
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
+I finally randomly shuffled the data set and put 20% of the data into a validation set. Then I had 11916 train samples, and 2979 validade samples.
 
-For details about how I created the training data, see the next section. 
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 2. I used an Adam optimizer so that manually training the learning rate wasn't necessary.
 
----
-### Model Architecture and Training Strategy
+#### 4. Model parameter tuning
 
-#### 3. Creation of the Training Set & Training Process
+The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 88).
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+Some improvements also were made to try to increase the performance of the system. The first tuned parameter was the regulation to correct the mesurement for the left and the right images. The parameter was defined as 0.22, added or subtract in the side images.
 
-![alt text][image2]
-
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
-
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
-
-Then I repeated this process on track two in order to get more data points.
-
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
-
-![alt text][image6]
-![alt text][image7]
-
-Etc ....
-
-After the collection process, I had X number of data points. I then preprocessed this data by ...
+One other tuned parameter that I used but had the opposite effect that I expected was to flip the images. Flipping the images, the model become slowly without any great improvemtns. In the end, I decided to not flip the images and only use my training sets.
 
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
