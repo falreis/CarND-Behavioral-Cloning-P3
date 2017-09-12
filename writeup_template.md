@@ -1,5 +1,12 @@
 [//]: # (Image References)
 [image1]: https://devblogs.nvidia.com/parallelforall/wp-content/uploads/2016/08/cnn-architecture-624x890.png "NVidia Network Architecture"
+[image2]: ./writeup_images/2laps_center_camera.jpg "Center lane driving - center camera"
+[image3]: ./writeup_images/2laps_left_camera.jpg "Center lane driving - left camera"
+[image4]: ./writeup_images/2laps_right_camera.jpg "Center lane driving - right camera"
+[image5]: ./writeup_images/bridge_center_camera.jpg "Bridge simulation - center camera"
+[image6]: ./writeup_images/bridge_left_camera.jpg "Bridge simulation - left camera"
+[image7]: ./writeup_images/bridge_right_camera.jpg "Bridge simulation - right camera"
+
 
 ## Behavioral Cloning
 
@@ -84,38 +91,47 @@ The detailed architecture is detailed bellow.
 | Normalization | *(pixel / 255) - 0.5* |
 |||
 | **2** ||
-| Convolution 5x5 | Filter number 24, kernel size 5x5, subsample 2x2
+| Convolution 5x5 | Filter number 24, kernel size 5x5, subsample 2x2 |
 | RELU | |
 |||
 | **3** ||
-| Convolution 5x5 | Filter number 36, subsample 2x2
+| Convolution 5x5 | Filter number 36, subsample 2x2 |
 | RELU | |
 |||
 | **4** ||
-| Convolution 5x5 | Filter number 48, subsample 2x2
+| Convolution 5x5 | Filter number 48, subsample 2x2 |
 | RELU | |
 |||
 | **5** ||
-| Convolution 3x3 | Filter number 64
-| RELU | |
+| Dropout | Rate: 0.3 |
 |||
 | **6** ||
 | Convolution 3x3 | Filter number 64
 | RELU | |
 |||
 | **7** ||
-| Flatten | - |
+| Convolution 3x3 | Filter number 64
+| RELU | |
 |||
 | **8** ||
-| Dense | 100 (Fully Connected Layer) |
+| Flatten | - |
 |||
 | **9** ||
-| Dense | 50 (Fully Connected Layer) |
+| Dropout | Rate: 0.3 |
 |||
 | **10** ||
-| Dense | 10 (Fully Connected Layer) |
+| Dense | 100 (Fully Connected Layer) |
 |||
 | **11** ||
+| Dense | 50 (Fully Connected Layer) |
+|||
+| **12** ||
+| Dropout | Rate: 0.3 |
+|||
+| **13** ||
+| Dense | 10 (Fully Connected Layer) |
+|||
+| **14** ||
 | Dense | 1 (Output) |
 |||
 
@@ -127,7 +143,15 @@ The model was trained and validated on different data sets to ensure that the mo
 
 ##### 3.1 Collecting Data & Training Sets
 
-To capture good driving behavior, I first recorded one laps on track one using center lane driving. Then I started to do some others scenarios, to use to train the model. The scenarios that I used is described below.
+To capture good driving behavior, I first recorded one and two laps on track one using center lane driving. Here is an example image of center lane driving:
+
+![Center lane driving - center camera][image2]
+
+The simulation also capture the side images from the track, by different cameras on the car. These images helps to train the network and to stabilize the vehicle. Here a example, of side images (left and right), in the center lane driving.
+
+![Center lane driving - left camera][image3] ![Center lane driving - right camera][image4]
+
+To increase the network performance, I did some extra data collections. The scenarios that I used is described below.
 
 - **1 lap** - 1 lap at the track (on the center lane driving)
 - **2 laps** - 2 laps at the track (on the center lane driving)
@@ -136,7 +160,11 @@ To capture good driving behavior, I first recorded one laps on track one using c
 - **bridge** - cross the bridge simulation
 - **reckless** - driving for 2 laps to the board of the road, crossing many times the road without get out of the track
 
-##### 3.2 Training Process
+One of the captures that can be highlighted is the bridge set. This test was used to increase the performance of the car on the bridge, where the simulation can lost the direction, because of the different texture of the road. Here some examples of bridge simulation.
+
+![Bridge simulation - center camera][image5] ![Bridge simulation - left camera][image6] ![Bridge simulation - right camera][image7]
+
+##### 3.3 Training Process
 
 To create the model, I combine all the simulation datas to create a large volume of data samples. I did the following steps to define my best training set. I wanted to use the minimum data set with the best results.
 
@@ -147,7 +175,7 @@ To create the model, I combine all the simulation datas to create a large volume
 - Adding **bridge training set** I wanted to test if the results were better in the bridge of the circuit. I think that this sample set is useless, because using the **2 laps training set**, the results were the same. I decided to keep this training set even so, to guarantee the good results;
 - Using **reckless training set** with combine with **2 laps training set**, the results were worse. The car start to go the the board of the road, without any improvements. In some moment, in a curve, the car went out the track.
 
-##### 3.3 Appropriate Training Data
+##### 3.4 Appropriate Training Data
 
 The final training set, defined for my model was the combination of the following samples:
 - **2 laps**
@@ -156,7 +184,7 @@ The final training set, defined for my model was the combination of the followin
 
 The model was trained for 2 epochs. Train for 3 epochs make sometimes made few improvements and some made worse results then 2 epochs. The increase of the number of trainings causes overfitting.
 
-##### 3.4 Training and Validation Data
+##### 3.5 Training and Validation Data
 
 After the collection process and the definition of the appropriate training data, I had 14895 data points. 
 
