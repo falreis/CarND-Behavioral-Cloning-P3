@@ -5,7 +5,7 @@ import gc
 import random
 import sklearn
 
-LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/", "data/3laps/", "data/curve/"]
+LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/",  "data/curve/", "data/curve-reverse/"]
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/"]
 #LOG_PATHS = ["data/2laps/"]
 
