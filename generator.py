@@ -5,9 +5,9 @@ import gc
 import random
 import sklearn
 
-#LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"]
+LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"]
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/"]
-LOG_PATHS = ["data/2laps/"]
+#LOG_PATHS = ["data/2laps/"]
 
 #parameters to tune
 correction = 0.22
@@ -15,7 +15,7 @@ crop_top = 70
 crop_bottom = 25
 crop_left = 0
 crop_right = 0
-stability = 1.1
+stability = 1.05
 dropout_rate = 0.3
 
 #read file
@@ -112,7 +112,7 @@ model.add(Dense(1))
 #NN compile and fit generator
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, samples_per_epoch= len(train_samples), 
-    validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=1)
+    validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=4)
 
 #run garbage collector
 gc.collect()
