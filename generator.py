@@ -5,7 +5,7 @@ import gc
 import random
 import sklearn
 
-LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/",  "data/curve/", "data/curve-reverse/"]
+LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/curve/", "data/curve-reverse/", "data/reckless-reverse/", "data/reckless/"]
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/"]
 #LOG_PATHS = ["data/2laps/"]
 
@@ -15,7 +15,7 @@ crop_top = 70
 crop_bottom = 25
 crop_left = 0
 crop_right = 0
-stability = 1.05
+stability = 1.1
 dropout_rate = 0.3
 
 #read file
@@ -55,7 +55,7 @@ def generator(samples, batch_size=32):
                 if center_angle > 0:
                     center_angle *= stability
                 else:
-                    center_angle /= stability
+                    center_angle *= stability
 
                 #append images and angles
                 images.append(center_image)
@@ -112,7 +112,7 @@ model.add(Dense(1))
 #NN compile and fit generator
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, samples_per_epoch= len(train_samples), 
-    validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=2)
+    validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=3)
 
 #run garbage collector
 gc.collect()
