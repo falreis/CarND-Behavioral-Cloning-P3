@@ -5,9 +5,9 @@ import gc
 import random
 import sklearn
 
-#LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"]
+LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/3laps/", "data/reckless/"]
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/"]
-LOG_PATHS = ["data/bridge/"]
+#LOG_PATHS = ["data/bridge/"]
 
 #parameters to tune
 correction = 0.22
@@ -15,7 +15,7 @@ crop_top = 70
 crop_bottom = 25
 crop_left = 0
 crop_right = 0
-stability = 1.1
+stability = 1
 dropout_rate = 0.3
 
 #read file
@@ -81,13 +81,13 @@ for path in LOG_PATHS:
             mesurements.append(mesurement_r)
 
             #flip images
-            #images.append(np.fliplr(image_c))
-            #images.append(np.fliplr(image_l))
-            #images.append(np.fliplr(image_r))
+            images.append(np.fliplr(image_c))
+            images.append(np.fliplr(image_l))
+            images.append(np.fliplr(image_r))
 
-            #mesurements.append(-mesurement_c)
-            #mesurements.append(-mesurement_l)
-            #mesurements.append(-mesurement_r)
+            mesurements.append(-mesurement_c)
+            mesurements.append(-mesurement_l)
+            mesurements.append(-mesurement_r)
         #endfor
     #endwith
 #endfor

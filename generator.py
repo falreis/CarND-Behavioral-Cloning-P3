@@ -8,6 +8,7 @@ import sklearn
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"]
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/"]
 LOG_PATHS = ["data/bridge/"]
+LOG_PATH = "data/bridge/"
 
 #parameters to tune
 correction = 0.22
@@ -25,7 +26,6 @@ for path in LOG_PATHS:
         reader = csv.reader(csvfile)
         for line in reader:
             samples.append(line)
-            break
         #endfor
     #endwith
 #endfor
@@ -36,7 +36,7 @@ train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 #generator
 def generator(samples, batch_size=32):
     num_samples = len(samples)
-    while 1: # Loop forever so the generator never terminates
+    while 1: #for i in (0,1000): # Loop forever so the generator never terminates
         sklearn.utils.shuffle(samples)
         for offset in range(0, num_samples, batch_size):
             batch_samples = samples[offset:offset+batch_size]
@@ -44,7 +44,7 @@ def generator(samples, batch_size=32):
             images = []
             angles = []
             for batch_sample in batch_samples:
-                center_image = cv2.imread(LOG_PATHS + batch_sample[0])
+                center_image = cv2.imread(LOG_PATH + batch_sample[0])
                 center_angle = float(batch_sample[3])
 
                 if center_angle > 0:
@@ -55,12 +55,11 @@ def generator(samples, batch_size=32):
                 images.append(center_image)
                 angles.append(center_angle)
                 
-                '''
-                images.append(cv2.imread(LOG_PATHS + batch_sample[1])) #left image
-                images.append(cv2.imread(LOG_PATHS + batch_sample[2])) #right image
+                images.append(cv2.imread(LOG_PATH + batch_sample[1])) #left image
+                images.append(cv2.imread(LOG_PATH + batch_sample[2])) #right image
                 angles.append(center_angle + correction) #left angle
                 angles.append(center_angle - correction) #right angle
-                '''
+                
             #endfor
 
             # trim image to only see section with road
@@ -105,6 +104,6 @@ model.fit_generator(train_generator, samples_per_epoch= len(train_samples),
 gc.collect()
 
 #save model
-model.save('model.h5')
+model.save('generator.h5')
 
 print("THE END")
