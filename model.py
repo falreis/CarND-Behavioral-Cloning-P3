@@ -6,7 +6,7 @@ import random
 import sklearn
 
 #LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/curve-reverse/", "data/curve/", "data/reckless/", "data/reckless-reverse/"]
-LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"] #, "data/reckless-reverse/", "data/curve/"]
+LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"] #, "data/reckless-reverse/", "data/curve/", "data/curve-reverse/"]
 #LOG_PATHS = ["data/2laps/"]
 
 #parameters to tune
@@ -15,8 +15,8 @@ crop_top = 70
 crop_bottom = 25
 crop_left = 0
 crop_right = 0
-stability = 1.05
-dropout_rate = 0.4
+stability = 1.1
+dropout_rate = 0.3
 
 #read file
 samples = []
@@ -66,12 +66,12 @@ def generator(samples, batch_size=32):
                 angles.append(center_angle - correction) #right angle
 
                 #flipped images and angles
-                images.append(np.fliplr(center_image))
-                images.append(np.fliplr(left_image))
-                images.append(np.fliplr(right_image))
-                angles.append(-center_angle)
-                angles.append(-(center_angle + correction))
-                angles.append(-(center_angle - correction))
+#                images.append(np.fliplr(center_image))
+#                images.append(np.fliplr(left_image))
+#                images.append(np.fliplr(right_image))
+#                angles.append(-center_angle)
+#                angles.append(-(center_angle + correction))
+#                angles.append(-(center_angle - correction))
             #endfor
 
             # trim image to only see section with road
@@ -93,9 +93,10 @@ from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 
 model = Sequential()
-model.add(Lambda(lambda x:x / 255.0 - 0.5, input_shape=(160,320,3)))
+model.add(Lambda(lambda x:x / 255 - 0.5, input_shape=(160,320,3)))
 model.add(Cropping2D(cropping=((crop_top, crop_bottom),(crop_left, crop_right))))
 model.add(Convolution2D(24,5,5, subsample=(2,2), activation="relu"))
+model.add(Dropout(dropout_rate))
 model.add(Convolution2D(36,5,5, subsample=(2,2), activation="relu"))
 model.add(Convolution2D(48,5,5, subsample=(2,2), activation="relu"))
 model.add(Dropout(dropout_rate))
@@ -112,7 +113,7 @@ model.add(Dense(1))
 #NN compile and fit generator
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, samples_per_epoch= len(train_samples), 
-    validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=3)
+    validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=1)
 
 #run garbage collector
 gc.collect()
