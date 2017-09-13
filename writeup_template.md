@@ -57,7 +57,7 @@ My model follow the architecture developed by the autonomous vehicle team in Nvi
 ![ CNN architecture. The network has about 27 million connections and 250 thousand parameters (Credits: Nvidia Parallel for all).][image1]
 (Credits: Nvidia - Parallel for All)
 
-The differences between my architecture and the NVidia architecture is the images shapes. My shapes uses the images sizes from the simulator (160x320x3). I cropped the images to the shape 65x320x3 (70 pixels on the top and 25 at the bottom). 
+The differences between my architecture and the NVidia architecture is the images shapes. My shapes uses the images sizes from the simulator (160x320x3). I cropped the images to the shape 65x320x3 (70 pixels on the top and 25 at the bottom). I add some dropouts layers to prevent overfitting.
 
 The cropped images and the architecture followed the video released at class from Udacity and I didn't do any improvements. 
 
@@ -76,7 +76,7 @@ To increase the performance of the solution, it was used the complementary image
 
 Making some tests in the solution, I discovered that I could make some improvements if I change a little bit the mesurements values for all data. If I multiply/divide the value of the mesurements (left, right) for a small parameter (1.1 or 1.2), the system predicted the changes faster and get more stable on the track.
 
-I used this idea to improve my model and refine my algorithm. The value of all the mesurements was multiplied/divided by 1.1, increasing the system response (model.py lines 16, 37-40).
+I used this idea to improve my model and refine my algorithm. The value of all the mesurements was multiplied/divided by 1.1, increasing the system response (model.py lines 16, 52-56).
 
 
 #### 2. Detailed Model Architecture
@@ -95,49 +95,50 @@ The detailed architecture is detailed bellow.
 | RELU | |
 |||
 | **3** ||
+| Dropout | Rate: 0.3 |
+|||
+| **4** ||
 | Convolution 5x5 | Filter number 36, subsample 2x2 |
 | RELU | |
 |||
-| **4** ||
+| **5** ||
 | Convolution 5x5 | Filter number 48, subsample 2x2 |
 | RELU | |
 |||
-| **5** ||
+| **6**||
 | Dropout | Rate: 0.3 |
-|||
-| **6** ||
-| Convolution 3x3 | Filter number 64
-| RELU | |
 |||
 | **7** ||
 | Convolution 3x3 | Filter number 64
 | RELU | |
 |||
 | **8** ||
-| Flatten | - |
+| Convolution 3x3 | Filter number 64
+| RELU | |
 |||
 | **9** ||
 | Dropout | Rate: 0.3 |
 |||
 | **10** ||
-| Dense | 100 (Fully Connected Layer) |
+| Flatten | - |
 |||
 | **11** ||
-| Dense | 50 (Fully Connected Layer) |
+| Dense | 100 (Fully Connected Layer) |
 |||
 | **12** ||
-| Dropout | Rate: 0.3 |
+| Dense | 50 (Fully Connected Layer) |
 |||
 | **13** ||
-| Dense | 10 (Fully Connected Layer) |
+| Dropout | Rate: 0.3 |
 |||
 | **14** ||
+| Dense | 10 (Fully Connected Layer) |
+|||
+| **15** ||
 | Dense | 1 (Output) |
 |||
 
-The model contains dropout layers in order to reduce overfitting, in the end of the model (model.py lines 83-86). 
-
-The model was trained and validated on different data sets to ensure that the model was not overfitting (model.py line 23-63). 
+The model contains dropout layers in order to reduce overfitting, in the end of the model (model.py lines 97, 100, 103, 107). 
 
 #### 3. Training
 
@@ -156,9 +157,12 @@ To increase the network performance, I did some extra data collections. The scen
 - **1 lap** - 1 lap at the track (on the center lane driving)
 - **2 laps** - 2 laps at the track (on the center lane driving)
 - **3 laps** - 3 laps at the track (on the center lane driving)
-- **2 laps reverse** - 2 laps at the simulation in the reverse direction
+- **2 laps reverse** - 2 laps at the simulation in reverse direction
 - **bridge** - cross the bridge simulation
 - **reckless** - driving for 2 laps to the board of the road, crossing many times the road without get out of the track
+- **reckless reverse** - driving for 1 laps to the board of the road, in the reverse direction, crossing many times the road without get out of the track
+- **curve** - drive in a curve after the bridge. In this curve, for many times the car lost its direction.
+- **curve reverse** - drive in a curve after the bridge, in reverse direction.
 
 One of the captures that can be highlighted is the bridge set. This test was used to increase the performance of the car on the bridge, where the simulation can lost the direction, because of the different texture of the road. Here some examples of bridge simulation.
 
@@ -173,7 +177,10 @@ To create the model, I combine all the simulation datas to create a large volume
 - Using the **3 laps training set**, the results were as good as using **2 laps training set**, with 30% more cost for training;
 - Using the **2 laps training set** with **2 laps reverse**, the results improved a little bit, but not so much. I could reduced the number of trainings from 3 to 2 (not overfitting, but not considerable improvement);
 - Adding **bridge training set** I wanted to test if the results were better in the bridge of the circuit. I think that this sample set is useless, because using the **2 laps training set**, the results were the same. I decided to keep this training set even so, to guarantee the good results;
-- Using **reckless training set** with combine with **2 laps training set**, the results were worse. The car start to go the the board of the road, without any improvements. In some moment, in a curve, the car went out the track.
+- Using **reckless training set** with combine with **2 laps training set**, the results improve a little bit when the car start to get out of the track, turning back quicker.
+- Using  **reckless reverse training set**,  **curve training set** and  **curve reverse training set**, the results were worse. I tested these parameters separately and togheter, but the result were always worse.
+
+The use of the training sets with 
 
 ##### 3.4 Appropriate Training Data
 
@@ -181,23 +188,29 @@ The final training set, defined for my model was the combination of the followin
 - **2 laps**
 - **2 laps reverse**
 - **bridge**
+- **reckless training set**
 
-The model was trained for 2 epochs. Train for 3 epochs make sometimes made few improvements and some made worse results then 2 epochs. The increase of the number of trainings causes overfitting.
+The model was trained for 1 epoch. Train for 2 or 3 epochs make sometimes made few improvements and some made worse results then 1 epoch. The increase of the number of trainings causes overfitting.
 
 ##### 3.5 Training and Validation Data
 
-After the collection process and the definition of the appropriate training data, I had 14895 data points. 
+After the collection process and the definition of the appropriate training data, I had 19074 data points. 
 
-I finally randomly shuffled the data set and put 20% of the data into a validation set. Then I had 11916 train samples, and 2979 validade samples.
+I finally randomly shuffled the data set and put 20% of the data into a validation set. Then I had 15259 train samples, and 3815 validade samples. 
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 2. I used an Adam optimizer so that manually training the learning rate wasn't necessary.
+The neural network with the generator used 5086 images to train the data in each epoch (1).
+
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 1. I used an Adam optimizer so that manually training the learning rate wasn't necessary.
+
 
 #### 4. Model parameter tuning
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 88).
+The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 112).
 
 Some improvements also were made to try to increase the performance of the system. The first tuned parameter was the regulation to correct the mesurement for the left and the right images. The parameter was defined as 0.22, added or subtract in the side images.
 
 One other tuned parameter that I used but had the opposite effect that I expected was to flip the images. Flipping the images, the model become slowly without any great improvemtns. In the end, I decided to not flip the images and only use my training sets.
+
+The dropout rate of the neural network was defined with 0.3 (model.py line 17). I tested some other parameters, but the best performances that I achieved was when the parameter was defined with 0.3 or 0.4. Changing the neural network for some tests, 0.3 return a more stable results.
 
 

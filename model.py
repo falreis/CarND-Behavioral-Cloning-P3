@@ -5,9 +5,7 @@ import gc
 import random
 import sklearn
 
-#LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/curve-reverse/", "data/curve/", "data/reckless/", "data/reckless-reverse/"]
-LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"] #, "data/reckless-reverse/", "data/curve/", "data/curve-reverse/"]
-#LOG_PATHS = ["data/2laps/"]
+LOG_PATHS = ["data/2laps/", "data/2laps-reverse/", "data/bridge/", "data/reckless/"]
 
 #parameters to tune
 correction = 0.22
