@@ -66,12 +66,12 @@ def generator(samples, batch_size=32):
                 angles.append(center_angle - correction) #right angle
 
                 #flipped images and angles
-                images.append(np.fliplr(center_image))
-                images.append(np.fliplr(left_image))
-                images.append(np.fliplr(right_image))
-                angles.append(-center_angle)
-                angles.append(-(center_angle + correction))
-                angles.append(-(center_angle - correction))
+#                images.append(np.fliplr(center_image))
+#                images.append(np.fliplr(left_image))
+#                images.append(np.fliplr(right_image))
+#                angles.append(-center_angle)
+#                angles.append(-(center_angle + correction))
+#                angles.append(-(center_angle - correction))
             #endfor
 
             # trim image to only see section with road
